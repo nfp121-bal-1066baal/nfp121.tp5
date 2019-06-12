@@ -10,9 +10,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Stack;
 
 public class JPanelListe2 extends JPanel implements ActionListener, ItemListener {
 
+	private Stack<List<String>> lists = new Stack<List<String>>();
+	
     private JPanel cmd = new JPanel();
     private JLabel afficheur = new JLabel();
     private JTextField saisie = new JTextField();
@@ -67,7 +70,11 @@ public class JPanelListe2 extends JPanel implements ActionListener, ItemListener
         add(texte, "Center");
 
         boutonRechercher.addActionListener(this);
-        // à compléter;
+        boutonOccurrences.addActionListener(this);
+		boutonRetirer.addActionListener(this);
+		ordreCroissant.addItemListener(this);
+		ordreDecroissant.addItemListener(this);
+		boutonAnnuler.addActionListener(this);
 
     }
 
@@ -92,6 +99,13 @@ public class JPanelListe2 extends JPanel implements ActionListener, ItemListener
                 else
                     afficheur.setText(" -->  ??? ");
             }
+			else if(ae.getSource()==boutonAnnuler){
+				if(lists.isEmpty())
+					return;
+				List<String> s = lists.pop();
+				liste=s;
+				texte.setText(liste.toString());
+			}
             texte.setText(liste.toString());
 
         } catch (Exception e) {
@@ -100,19 +114,48 @@ public class JPanelListe2 extends JPanel implements ActionListener, ItemListener
     }
 
     public void itemStateChanged(ItemEvent ie) {
-        if (ie.getSource() == ordreCroissant)
-        ;// à compléter
-        else if (ie.getSource() == ordreDecroissant)
-        ;// à compléter
+        List<String> s = new LinkedList<String>();
+		s.addAll(liste);
+		lists.push(s);
+		
+		if (ie.getSource() == ordreCroissant){
+			Collections.sort(liste);
+			texte.setText(liste.toString());
+		}
+        else if (ie.getSource() == ordreDecroissant){
+			Collections.sort(liste,new Comparateur());
+			texte.setText(liste.toString());
+		}
+		
 
         texte.setText(liste.toString());
     }
 
+    private class Comparateur implements Comparator<String>{
+		public int compare(String t1,String t2){
+			return t2.compareTo(t1);
+		}
+	}
+
     private boolean retirerDeLaListeTousLesElementsCommencantPar(String prefixe) {
-        boolean resultat = false;
-        // à compléter
-        // à compléter
-        // à compléter
+        
+		boolean resultat = false;
+        Iterator<String> it = liste.iterator();
+		while(it.hasNext())
+		{
+			String s= it.next();
+
+			if(s.startsWith(prefixe)){
+				List<String> ls = new LinkedList<String>();
+				ls.addAll(liste);
+				lists.push(ls);
+				it.remove();
+				resultat=true;
+
+				occurrences.remove(s);
+				occurrences.put(s,0);
+			}
+        }
         return resultat;
     }
 
